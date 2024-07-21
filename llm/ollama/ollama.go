@@ -6,21 +6,42 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
+
+	"github.com/greycodee/tmcmd/util"
 )
 
 type Ollama struct {
-	response responseInfo
+	config util.LLMConfig
 }
 
-type responseInfo struct {
-	TotalDuration      int64  `json:"total_duration"`
-	LoadDuration       int64  `json:"load_duration"`
-	PromptEvalCount    int    `json:"prompt_eval_count"`
-	PromptEvalDuration int64  `json:"prompt_eval_duration"`
-	EvalCount          int    `json:"eval_count"`
-	EvalDuration       int64  `json:"eval_duration"`
-	Context            []int  `json:"context"`
-	Response           string `json:"response"`
+type payload struct {
+	Model    string `json:"model"`
+	Messages []struct {
+		Role    string `json:"role"`
+		Content string `json:"content"`
+	} `json:"messages"`
+	Stream bool `json:"stream"`
+}
+
+type response struct {
+	Model     string    `json:"model"`
+	CreatedAt time.Time `json:"created_at"`
+	Message   struct {
+		Role    string `json:"role"`
+		Content string `json:"content"`
+	} `json:"message"`
+	Done               bool  `json:"done"`
+	TotalDuration      int64 `json:"total_duration"`
+	LoadDuration       int   `json:"load_duration"`
+	PromptEvalCount    int   `json:"prompt_eval_count"`
+	PromptEvalDuration int   `json:"prompt_eval_duration"`
+	EvalCount          int   `json:"eval_count"`
+	EvalDuration       int64 `json:"eval_duration"`
+}
+
+func (o *Ollama) Init(config util.LLMConfig) {
+	o.config = config
 }
 
 func (o *Ollama) GenerateCommand(prompt string) string {
@@ -32,18 +53,31 @@ func (o *Ollama) generate(prompt string) string {
 }
 
 func (o *Ollama) requestLocalOllamaAPI(prompt string) string {
-	requestBody := map[string]interface{}{
-		"model":  "llama3",
-		"prompt": prompt,
-		"stream": false,
+	payload := payload{
+		Model: o.config.Model,
+		Messages: []struct {
+			Role    string `json:"role"`
+			Content string `json:"content"`
+		}{
+			{
+				Role:    "system",
+				Content: util.GetSystemPrompt(),
+			},
+			{
+				Role:    "user",
+				Content: prompt,
+			},
+		},
+		Stream: false,
 	}
-	jsonBody, err := json.Marshal(requestBody)
+
+	jsonBody, err := json.Marshal(payload)
 	if err != nil {
 		fmt.Println("Error marshalling request body:", err)
 		return ""
 	}
 
-	resp, err := http.Post("http://localhost:11434/api/generate", "application/json", bytes.NewBuffer(jsonBody))
+	resp, err := http.Post(o.config.BaseURL, "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
 		fmt.Println("Error making request to local ollama server API:", err)
 		return ""
@@ -58,12 +92,12 @@ func (o *Ollama) requestLocalOllamaAPI(prompt string) string {
 	}
 
 	// Unmarshal the response body into the responseInfo struct
-	o.response = responseInfo{}
-	err = json.Unmarshal(body, &o.response)
+	var respInfo response
+	err = json.Unmarshal(body, &respInfo)
 	if err != nil {
 		fmt.Println("Error unmarshalling response body:", err)
 		return ""
 	}
 	// Return the response
-	return o.response.Response
+	return respInfo.Message.Content
 }
