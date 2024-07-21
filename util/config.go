@@ -49,12 +49,25 @@ func GetConfig() (*Config, error) {
 		if err != nil {
 			return nil, err
 		}
-		defaultConfig, err := os.ReadFile("config_example.toml")
-		if err != nil {
-			return nil, err
-		}
+		defaultConfig := `
+default-provider = "ollama"
 
-		err = os.WriteFile(configPath+configFileName, defaultConfig, os.ModePerm)
+[llm-provider.google]
+model = "gemini-1.5-pro"
+api_key = "your-api-key"
+
+[llm-provider.ollama]
+base_url = "http://localhost:11434/api/chat"
+model = "llama3"
+
+# Supports both OpenAI and Deepinfra
+[llm-provider.openai]
+base_url = "https://api.deepinfra.com/v1/openai/chat/completions"
+model = "google/gemma-2-27b-it"
+api_key = "your-api-key"
+`
+
+		err = os.WriteFile(configPath+configFileName, []byte(defaultConfig), os.ModePerm)
 		if err != nil {
 			return nil, err
 		}
