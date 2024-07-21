@@ -66,3 +66,9 @@ func TestParseConfigFilePath(t *testing.T) {
 	assert.NotNil(t, config)
 
 }
+
+func TestGetConfig(t *testing.T) {
+	config, err := GetConfig()
+	assert.NoError(t, err)
+	assert.NotNil(t, config)
+}

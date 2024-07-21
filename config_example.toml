@@ -1,4 +1,4 @@
-default-provider = "openai"
+default-provider = "ollama"
 
 [llm-provider.google]
 model = "gemini-1.5-pro"
