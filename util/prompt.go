@@ -13,6 +13,7 @@ Arch: %s
 	prePrompt := sysInfoStr + `
 ## Note
 Please note: 
+- If there are more than one eligible command, give only the first three.
 - Do not respond to any dialog that is not related to the query command
 - Please recommend a command that matches the current system
 - Do not include any symbols that are not related to the command

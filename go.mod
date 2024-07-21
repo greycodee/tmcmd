@@ -5,8 +5,13 @@ go 1.21.5
 require google.golang.org/api v0.188.0
 
 require (
+	github.com/briandowns/spinner v1.23.1 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/fatih/color v1.7.0 // indirect
+	github.com/mattn/go-colorable v0.1.2 // indirect
+	github.com/mattn/go-isatty v0.0.8 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	golang.org/x/term v0.22.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 

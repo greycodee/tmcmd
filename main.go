@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/greycodee/tmcmd/llm"
 	"github.com/greycodee/tmcmd/llm/google"
 	"github.com/greycodee/tmcmd/llm/ollama"
@@ -13,6 +15,9 @@ import (
 )
 
 func main() {
+	s := spinner.New(spinner.CharSets[34], 100*time.Millisecond)
+	s.Start()
+	s.Color("green")
 	// Accept command line arguments
 	userPrompt := os.Args[1:]
 	// prompt := util.GetPrompt(strings.Join(userPrompt, ""))
@@ -41,5 +46,6 @@ func main() {
 	}
 	llm.Init(config.LLMProvider[config.DefaultProvider])
 	command := llm.GenerateCommand(strings.Join(userPrompt, ""))
+	s.Stop()
 	fmt.Printf("\033[42mRecommended command\033[0m\r\n\033[32m%s\033[0m\n", command)
 }
