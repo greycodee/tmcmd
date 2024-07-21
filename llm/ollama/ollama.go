@@ -3,7 +3,6 @@ package ollama
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -40,19 +39,24 @@ type response struct {
 	EvalDuration       int64 `json:"eval_duration"`
 }
 
-func (o *Ollama) Init(config util.LLMConfig) {
+func (o *Ollama) Init(config util.LLMConfig) error {
 	o.config = config
+	return nil
 }
 
-func (o *Ollama) GenerateCommand(prompt string) string {
+func (o *Ollama) GenerateCommand(prompt string) (string, error) {
 	return o.generate(prompt)
 }
 
-func (o *Ollama) generate(prompt string) string {
+func (o *Ollama) generate(prompt string) (string, error) {
 	return o.requestLocalOllamaAPI(prompt)
 }
 
-func (o *Ollama) requestLocalOllamaAPI(prompt string) string {
+func (o *Ollama) requestLocalOllamaAPI(prompt string) (string, error) {
+	systemPrompt, err := util.GetSystemPrompt()
+	if err != nil {
+		return "", err
+	}
 	payload := payload{
 		Model: o.config.Model,
 		Messages: []struct {
@@ -61,7 +65,7 @@ func (o *Ollama) requestLocalOllamaAPI(prompt string) string {
 		}{
 			{
 				Role:    "system",
-				Content: util.GetSystemPrompt(),
+				Content: systemPrompt,
 			},
 			{
 				Role:    "user",
@@ -73,31 +77,27 @@ func (o *Ollama) requestLocalOllamaAPI(prompt string) string {
 
 	jsonBody, err := json.Marshal(payload)
 	if err != nil {
-		fmt.Println("Error marshalling request body:", err)
-		return ""
+		return "", err
 	}
 
 	resp, err := http.Post(o.config.BaseURL, "application/json", bytes.NewBuffer(jsonBody))
 	if err != nil {
-		fmt.Println("Error making request to local ollama server API:", err)
-		return ""
+		return "", err
 	}
 	defer resp.Body.Close()
 
 	// Read the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error reading response body:", err)
-		return ""
+		return "", err
 	}
 
 	// Unmarshal the response body into the responseInfo struct
 	var respInfo response
 	err = json.Unmarshal(body, &respInfo)
 	if err != nil {
-		fmt.Println("Error unmarshalling response body:", err)
-		return ""
+		return "", err
 	}
 	// Return the response
-	return respInfo.Message.Content
+	return respInfo.Message.Content, nil
 }

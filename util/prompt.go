@@ -2,13 +2,16 @@ package util
 
 import "fmt"
 
-func GetSystemPrompt() string {
+func GetSystemPrompt() (string, error) {
 	sysInfoTemplate := `## OS Info
 OS: %s
 OS Name: %s
 Arch: %s
 `
-	sysInfo := GetSysInfo()
+	sysInfo, err := GetSysInfo()
+	if err != nil {
+		return "", err
+	}
 	sysInfoStr := fmt.Sprintf(sysInfoTemplate, sysInfo.OS, sysInfo.OSName, sysInfo.Arch)
 	prePrompt := sysInfoStr + `
 ## Note
@@ -28,10 +31,14 @@ Please generate me a  terminal command directly for the following task:
 
 
 `
-	return prePrompt
+	return prePrompt, nil
 
 }
 
-func GetPrompt(userPrompt string) string {
-	return GetSystemPrompt() + userPrompt
+func GetPrompt(userPrompt string) (string, error) {
+	systemInfo, err := GetSystemPrompt()
+	if err != nil {
+		return "", err
+	}
+	return systemInfo + userPrompt, nil
 }

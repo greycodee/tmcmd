@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -22,12 +24,13 @@ func main() {
 	userPrompt := os.Args[1:]
 	// prompt := util.GetPrompt(strings.Join(userPrompt, ""))
 	if len(userPrompt) == 0 {
-		userPrompt = append(userPrompt, "查询当前系统发行版本")
+		userPrompt = append(userPrompt, "how to query current information")
 	}
 	// Get the configuration
 	config, err := util.GetConfig()
 	if err != nil {
-		fmt.Println("Error getting config:", err)
+		s.Stop()
+		logError(err)
 		return
 	}
 	var llm llm.LLMBaseInterface
@@ -42,10 +45,21 @@ func main() {
 		// Initialize openai
 		llm = new(openai.OpenAI)
 	default:
-		fmt.Println("Default provider not supported")
+		s.Stop()
+		logError(errors.New("default provider not supported"))
 	}
 	llm.Init(config.LLMProvider[config.DefaultProvider])
-	command := llm.GenerateCommand(strings.Join(userPrompt, ""))
+	command, err := llm.GenerateCommand(strings.Join(userPrompt, ""))
+	if err != nil {
+		s.Stop()
+		logError(err)
+	}
 	s.Stop()
 	fmt.Printf("\033[42mRecommended command\033[0m\r\n\033[32m%s\033[0m\n", command)
+}
+
+func logError(err error) {
+	if err != nil {
+		log.Fatalf("\033[31mError: %v\033[0m\n", err)
+	}
 }

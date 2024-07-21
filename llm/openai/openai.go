@@ -43,33 +43,42 @@ type openaiResponse struct {
 	} `json:"usage"`
 }
 
-func (o *OpenAI) Init(config util.LLMConfig) {
+func (o *OpenAI) Init(config util.LLMConfig) error {
 	o.config = config
+	return nil
 }
 
-func (o *OpenAI) GenerateCommand(prompt string) string {
-	return o.generate(prompt).Choices[0].Message.Content
+func (o *OpenAI) GenerateCommand(prompt string) (string, error) {
+	response, err := o.generate(prompt)
+	if err != nil {
+		return "", err
+	}
+	return response.Choices[0].Message.Content, nil
 }
 
-func (o *OpenAI) generate(prompt string) openaiResponse {
+func (o *OpenAI) generate(prompt string) (openaiResponse, error) {
+	systemPrompt, err := util.GetSystemPrompt()
+	if err != nil {
+		return openaiResponse{}, err
+	}
 	payload := requestPayload{
 		Model: o.config.Model,
 		Messages: []struct {
 			Role    string "json:\"role\""
 			Content string "json:\"content\""
 		}{
-			{Role: "system", Content: util.GetSystemPrompt()},
+			{Role: "system", Content: systemPrompt},
 			{Role: "user", Content: prompt},
 		},
 	}
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
-		fmt.Println("Error marshalling payload:", err)
+		return openaiResponse{}, err
 	}
 
 	req, err := http.NewRequest("POST", o.config.BaseURL, bytes.NewBuffer(payloadBytes))
 	if err != nil {
-		fmt.Println("Error creating request:", err)
+		return openaiResponse{}, err
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -78,14 +87,14 @@ func (o *OpenAI) generate(prompt string) openaiResponse {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("Error sending request:", err)
+		return openaiResponse{}, err
 	}
 	defer resp.Body.Close()
 
 	// Read and print the response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Error reading response body:", err)
+		return openaiResponse{}, err
 	}
 
 	var response openaiResponse
@@ -93,5 +102,5 @@ func (o *OpenAI) generate(prompt string) openaiResponse {
 	if err != nil {
 		fmt.Println("Error unmarshalling response body:", err)
 	}
-	return response
+	return response, nil
 }
