@@ -2,6 +2,8 @@
 
 tmcmd is a powerful terminal tool designed to enhance your productivity by providing AI-powered command recommendations. With a simple and intuitive interface, you can easily obtain suggestions for commands based on your input, streamlining your workflow and saving valuable time.
 
+> Note: The accuracy of the recommended commands is related to the strength of the model, the stronger the model, the more accurate the recommended commands are.
+
 ## Features
 
 - **Flexible Configuration**: Customize the tool to suit your needs by modifying the default command provider directly from the configuration file.
