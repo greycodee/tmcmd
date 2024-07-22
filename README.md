@@ -61,7 +61,7 @@ netstat -a -n -p tcp | grep :80
 tmcmd -q "Start the nginx service on docker and expose port 80."
 
 Recommended command
-docker run -d -p 80:80 ngin
+docker run -d -p 80:80 nginx
 ```
 
 Use the `-p ollama` option to select ollama to process the current request.
@@ -70,5 +70,5 @@ Use the `-p ollama` option to select ollama to process the current request.
 tmcmd -q "Start the nginx service on docker and expose port 80." -p ollama
 
 Recommended command
-docker run -d -p 80:80 ngin
+docker run -d -p 80:80 nginx
 ```
