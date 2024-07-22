@@ -45,3 +45,28 @@ git clone https://github.com/greycodee/tmcmd.git
 cd tmcmd
 go build .
 ```
+
+## Usage
+
+```bash
+tmcmd -q "View 80-port occupancy status"
+
+Recommended command
+netstat -a -n -p tcp | grep :80
+```
+
+```bash
+tmcmd -q "Start the nginx service on docker and expose port 80."
+
+Recommended command
+docker run -d -p 80:80 ngin
+```
+
+Use the `-p ollama` option to select ollama to process the current request.
+
+```bash
+tmcmd -q "Start the nginx service on docker and expose port 80." -p ollama
+
+Recommended command
+docker run -d -p 80:80 ngin
+```
