@@ -48,6 +48,10 @@ cd tmcmd
 go build .
 ```
 
+## Binary Download
+
+You can download the latest binaries for your system from the [release page](https://github.com/greycodee/tmcmd/releases).
+
 ## Usage
 
 ```bash
